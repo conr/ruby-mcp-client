@@ -187,7 +187,10 @@ module MCPClient
       def setup_sse_connection(uri)
         sse_base = "#{uri.scheme}://#{uri.host}:#{uri.port}"
 
-        @sse_conn ||= Faraday.new(url: sse_base) do |f|
+        faraday_options = { url: sse_base }
+        faraday_options[:ssl] = build_ssl_config if @ssl_options
+
+        @sse_conn ||= Faraday.new(faraday_options) do |f|
           f.options.open_timeout = 10
           f.options.timeout = nil
           f.request :retry, max: @max_retries, interval: @retry_backoff, backoff_factor: 2

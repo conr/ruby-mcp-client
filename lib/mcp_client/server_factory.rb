@@ -57,7 +57,8 @@ module MCPClient
         retries: config[:retries] || 0,
         retry_backoff: config[:retry_backoff] || 1,
         name: config[:name],
-        logger: logger
+        logger: logger,
+        ssl: config[:ssl]
       )
     end
 

@@ -37,6 +37,13 @@ RSpec.describe MCPClient::ServerFactory do
         server = described_class.create(config, logger: custom_logger)
         expect(server.instance_variable_get(:@logger)).to eq(custom_logger)
       end
+
+      it 'passes ssl options to the server' do
+        ssl_options = { verify: false }
+        config_with_ssl = config.merge(ssl: ssl_options)
+        server = described_class.create(config_with_ssl)
+        expect(server.instance_variable_get(:@ssl_options)).to eq(ssl_options)
+      end
     end
 
     context 'with config that includes logger' do

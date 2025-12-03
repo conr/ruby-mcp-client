@@ -276,4 +276,75 @@ RSpec.describe 'SSL Configuration' do
       expect(server.instance_variable_get(:@ssl_options)).to be_nil
     end
   end
+
+  describe 'MCPClient.sse_config' do
+    it 'includes ssl option when provided' do
+      ssl_options = { verify: false }
+      config = MCPClient.sse_config(base_url: 'https://example.com', ssl: ssl_options)
+
+      expect(config[:ssl]).to eq(ssl_options)
+    end
+
+    it 'omits ssl key when nil' do
+      config = MCPClient.sse_config(base_url: 'https://example.com')
+
+      expect(config).not_to have_key(:ssl)
+    end
+
+    it 'accepts cert_store option' do
+      cert_store = OpenSSL::X509::Store.new
+      ssl_options = { cert_store: cert_store, verify: true }
+      config = MCPClient.sse_config(base_url: 'https://example.com', ssl: ssl_options)
+
+      expect(config[:ssl][:cert_store]).to eq(cert_store)
+      expect(config[:ssl][:verify]).to be true
+    end
+  end
+
+  describe 'MCPClient::ServerSSE' do
+    it 'stores ssl_options from initialization' do
+      ssl_options = { verify: false }
+
+      server = MCPClient::ServerSSE.new(
+        base_url: 'https://example.com',
+        ssl: ssl_options
+      )
+
+      expect(server.instance_variable_get(:@ssl_options)).to eq(ssl_options)
+    end
+
+    it 'defaults ssl_options to nil' do
+      server = MCPClient::ServerSSE.new(base_url: 'https://example.com')
+
+      expect(server.instance_variable_get(:@ssl_options)).to be_nil
+    end
+  end
+
+  describe 'MCPClient::OAuthClient' do
+    describe '.create_http_server' do
+      it 'passes ssl options to ServerHTTP' do
+        ssl_options = { verify: false }
+
+        server = MCPClient::OAuthClient.create_http_server(
+          server_url: 'https://example.com',
+          ssl: ssl_options
+        )
+
+        expect(server.instance_variable_get(:@ssl_options)).to eq(ssl_options)
+      end
+    end
+
+    describe '.create_streamable_http_server' do
+      it 'passes ssl options to ServerStreamableHTTP' do
+        ssl_options = { verify: false }
+
+        server = MCPClient::OAuthClient.create_streamable_http_server(
+          server_url: 'https://example.com',
+          ssl: ssl_options
+        )
+
+        expect(server.instance_variable_get(:@ssl_options)).to eq(ssl_options)
+      end
+    end
+  end
 end

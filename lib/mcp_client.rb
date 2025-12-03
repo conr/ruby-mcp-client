@@ -87,10 +87,11 @@ module MCPClient
   # @param retry_backoff [Integer] backoff delay in seconds (default: 1)
   # @param name [String, nil] optional name for this server
   # @param logger [Logger, nil] optional logger for server operations
+  # @param ssl [Hash, nil] optional SSL configuration options for Faraday (e.g., cert_store, verify)
   # @return [Hash] server configuration
   def self.sse_config(base_url:, headers: {}, read_timeout: 30, ping: 10, retries: 0, retry_backoff: 1,
-                      name: nil, logger: nil)
-    {
+                      name: nil, logger: nil, ssl: nil)
+    config = {
       type: 'sse',
       base_url: base_url,
       headers: headers,
@@ -101,6 +102,8 @@ module MCPClient
       name: name,
       logger: logger
     }
+    config[:ssl] = ssl if ssl
+    config
   end
 
   # Create a standard server configuration for HTTP

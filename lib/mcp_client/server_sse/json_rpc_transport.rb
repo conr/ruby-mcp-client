@@ -139,13 +139,33 @@ module MCPClient
       # @param base_url [String] the base URL for the connection
       # @return [Faraday::Connection] the configured connection
       def create_json_rpc_connection(base_url)
-        Faraday.new(url: base_url) do |f|
+        faraday_options = { url: base_url }
+        faraday_options[:ssl] = build_ssl_config if @ssl_options
+
+        Faraday.new(faraday_options) do |f|
           f.request :retry, max: @max_retries, interval: @retry_backoff, backoff_factor: 2
           f.response :follow_redirects, limit: 3
           f.options.open_timeout = @read_timeout
           f.options.timeout = @read_timeout
           f.adapter Faraday.default_adapter
         end
+      end
+
+      # Build SSL configuration for Faraday connection
+      # Sets secure TLS defaults and merges user-provided options
+      # @return [Hash] SSL configuration hash for Faraday
+      def build_ssl_config
+        config = {
+          min_version: OpenSSL::SSL::TLS1_2_VERSION
+        }
+
+        # Add TLS 1.3 max version if available (Ruby 2.5+ with OpenSSL 1.1.1+)
+        config[:max_version] = OpenSSL::SSL::TLS1_3_VERSION if OpenSSL::SSL.const_defined?(:TLS1_3_VERSION)
+
+        # Merge user-provided SSL options if present
+        config.merge!(@ssl_options) if @ssl_options.is_a?(Hash)
+
+        config
       end
 
       # Send an HTTP request with the proper headers and body

@@ -4,6 +4,7 @@ require 'uri'
 require 'json'
 require 'monitor'
 require 'logger'
+require 'openssl'
 require 'faraday'
 require 'faraday/retry'
 require 'faraday/follow_redirects'
@@ -66,8 +67,9 @@ module MCPClient
     # @param retry_backoff [Numeric] base delay in seconds for exponential backoff
     # @param name [String, nil] optional name for this server
     # @param logger [Logger, nil] optional logger
+    # @param ssl [Hash, nil] optional SSL configuration for Faraday (e.g., cert_store, verify)
     def initialize(base_url:, headers: {}, read_timeout: 30, ping: 10,
-                   retries: 0, retry_backoff: 1, name: nil, logger: nil)
+                   retries: 0, retry_backoff: 1, name: nil, logger: nil, ssl: nil)
       super(name: name)
       initialize_logger(logger)
       @max_retries = retries
@@ -85,6 +87,7 @@ module MCPClient
       @ping_interval = ping
       # Set close_after to a multiple of the ping interval
       @close_after = (ping * CLOSE_AFTER_PING_RATIO).to_i
+      @ssl_options = ssl
 
       # SSE-provided JSON-RPC endpoint path for POST requests
       @rpc_endpoint = nil
