@@ -20,6 +20,7 @@ module MCPClient
     # @option options [String, nil] :name Optional name for this server
     # @option options [Logger, nil] :logger Optional logger
     # @option options [Object, nil] :storage Storage backend for OAuth tokens and client info
+    # @option options [Hash, nil] :ssl Optional SSL configuration for Faraday (e.g., cert_store, verify)
     # @return [ServerHTTP] OAuth-enabled HTTP server
     def self.create_http_server(server_url:, **options)
       opts = default_server_options.merge(options)
@@ -41,7 +42,8 @@ module MCPClient
         retry_backoff: opts[:retry_backoff],
         name: opts[:name],
         logger: opts[:logger],
-        oauth_provider: oauth_provider
+        oauth_provider: oauth_provider,
+        ssl: opts[:ssl]
       )
     end
 
@@ -69,7 +71,8 @@ module MCPClient
         retry_backoff: opts[:retry_backoff],
         name: opts[:name],
         logger: opts[:logger],
-        oauth_provider: oauth_provider
+        oauth_provider: oauth_provider,
+        ssl: opts[:ssl]
       )
     end
 
@@ -120,7 +123,8 @@ module MCPClient
         retry_backoff: 1,
         name: nil,
         logger: nil,
-        storage: nil
+        storage: nil,
+        ssl: nil
       }
     end
   end
