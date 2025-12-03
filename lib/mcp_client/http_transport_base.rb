@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'openssl'
 require_relative 'json_rpc_common'
 require_relative 'auth/oauth_provider'
 
@@ -258,12 +259,32 @@ module MCPClient
     # Create a Faraday connection for HTTP requests
     # @return [Faraday::Connection] the configured connection
     def create_http_connection
-      Faraday.new(url: @base_url) do |f|
+      faraday_options = { url: @base_url }
+      faraday_options[:ssl] = build_ssl_config if @ssl_options
+
+      Faraday.new(faraday_options) do |f|
         f.request :retry, max: @max_retries, interval: @retry_backoff, backoff_factor: 2
         f.options.open_timeout = @read_timeout
         f.options.timeout = @read_timeout
         f.adapter Faraday.default_adapter
       end
+    end
+
+    # Build SSL configuration for Faraday connection
+    # Sets secure TLS defaults and merges user-provided options
+    # @return [Hash] SSL configuration hash for Faraday
+    def build_ssl_config
+      config = {
+        min_version: OpenSSL::SSL::TLS1_2_VERSION
+      }
+
+      # Add TLS 1.3 max version if available (Ruby 2.5+ with OpenSSL 1.1.1+)
+      config[:max_version] = OpenSSL::SSL::TLS1_3_VERSION if OpenSSL::SSL.const_defined?(:TLS1_3_VERSION)
+
+      # Merge user-provided SSL options if present
+      config.merge!(@ssl_options) if @ssl_options.is_a?(Hash)
+
+      config
     end
 
     # Log HTTP response (to be overridden by specific transports)

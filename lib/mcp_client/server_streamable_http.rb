@@ -97,6 +97,7 @@ module MCPClient
                                       })
 
       @read_timeout = opts[:read_timeout]
+      @ssl_options = opts[:ssl]
       @tools = nil
       @tools_data = nil
       @prompts = nil
@@ -483,7 +484,8 @@ module MCPClient
         retry_backoff: 1,
         name: nil,
         logger: nil,
-        oauth_provider: nil
+        oauth_provider: nil,
+        ssl: nil
       }
     end
 
@@ -619,7 +621,10 @@ module MCPClient
       loop do
         # Create a Faraday connection specifically for SSE streaming
         # Using net_http adapter for better streaming support
-        conn = Faraday.new(url: @base_url) do |f|
+        faraday_options = { url: @base_url }
+        faraday_options[:ssl] = build_ssl_config if @ssl_options
+
+        conn = Faraday.new(faraday_options) do |f|
           f.request :retry, max: 0 # No automatic retries for SSE stream
           f.options.open_timeout = 10
           f.options.timeout = SSE_CONNECTION_TIMEOUT
