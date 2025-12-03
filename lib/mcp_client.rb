@@ -112,10 +112,11 @@ module MCPClient
   # @param retry_backoff [Integer] backoff delay in seconds (default: 1)
   # @param name [String, nil] optional name for this server
   # @param logger [Logger, nil] optional logger for server operations
+  # @param ssl [Hash, nil] optional SSL configuration options for Faraday (e.g., cert_store, verify)
   # @return [Hash] server configuration
   def self.http_config(base_url:, endpoint: '/rpc', headers: {}, read_timeout: 30, retries: 3, retry_backoff: 1,
-                       name: nil, logger: nil)
-    {
+                       name: nil, logger: nil, ssl: nil)
+    config = {
       type: 'http',
       base_url: base_url,
       endpoint: endpoint,
@@ -126,6 +127,8 @@ module MCPClient
       name: name,
       logger: logger
     }
+    config[:ssl] = ssl if ssl
+    config
   end
 
   # Create configuration for Streamable HTTP transport
@@ -138,10 +141,11 @@ module MCPClient
   # @param retry_backoff [Integer] Backoff delay in seconds (default: 1)
   # @param name [String, nil] Optional name for this server
   # @param logger [Logger, nil] Optional logger for server operations
+  # @param ssl [Hash, nil] Optional SSL configuration options for Faraday (e.g., cert_store, verify)
   # @return [Hash] server configuration
   def self.streamable_http_config(base_url:, endpoint: '/rpc', headers: {}, read_timeout: 30, retries: 3,
-                                  retry_backoff: 1, name: nil, logger: nil)
-    {
+                                  retry_backoff: 1, name: nil, logger: nil, ssl: nil)
+    config = {
       type: 'streamable_http',
       base_url: base_url,
       endpoint: endpoint,
@@ -152,5 +156,7 @@ module MCPClient
       name: name,
       logger: logger
     }
+    config[:ssl] = ssl if ssl
+    config
   end
 end

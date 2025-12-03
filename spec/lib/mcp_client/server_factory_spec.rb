@@ -50,6 +50,40 @@ RSpec.describe MCPClient::ServerFactory do
       end
     end
 
+    context 'with http config' do
+      let(:base_url) { 'https://example.com' }
+      let(:config) { { type: 'http', base_url: base_url } }
+
+      it 'creates a ServerHTTP instance' do
+        server = described_class.create(config)
+        expect(server).to be_a(MCPClient::ServerHTTP)
+      end
+
+      it 'passes ssl options to the server' do
+        ssl_options = { verify: false }
+        config_with_ssl = config.merge(ssl: ssl_options)
+        server = described_class.create(config_with_ssl)
+        expect(server.instance_variable_get(:@ssl_options)).to eq(ssl_options)
+      end
+    end
+
+    context 'with streamable_http config' do
+      let(:base_url) { 'https://example.com' }
+      let(:config) { { type: 'streamable_http', base_url: base_url } }
+
+      it 'creates a ServerStreamableHTTP instance' do
+        server = described_class.create(config)
+        expect(server).to be_a(MCPClient::ServerStreamableHTTP)
+      end
+
+      it 'passes ssl options to the server' do
+        ssl_options = { verify: false }
+        config_with_ssl = config.merge(ssl: ssl_options)
+        server = described_class.create(config_with_ssl)
+        expect(server.instance_variable_get(:@ssl_options)).to eq(ssl_options)
+      end
+    end
+
     context 'with unknown type' do
       let(:config) { { type: 'unknown' } }
 

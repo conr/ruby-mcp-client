@@ -55,6 +55,7 @@ module MCPClient
     # @option options [String, nil] :name Optional name for this server
     # @option options [Logger, nil] :logger Optional logger
     # @option options [MCPClient::Auth::OAuthProvider, nil] :oauth_provider Optional OAuth provider
+    # @option options [Hash, nil] :ssl Optional SSL configuration for Faraday (e.g., cert_store, verify)
     def initialize(base_url:, **options)
       opts = default_options.merge(options)
       super(name: opts[:name])
@@ -99,6 +100,7 @@ module MCPClient
                                       })
 
       @read_timeout = opts[:read_timeout]
+      @ssl_options = opts[:ssl]
       @tools = nil
       @tools_data = nil
       @request_id = 0
@@ -420,7 +422,8 @@ module MCPClient
         retry_backoff: 1,
         name: nil,
         logger: nil,
-        oauth_provider: nil
+        oauth_provider: nil,
+        ssl: nil
       }
     end
 
